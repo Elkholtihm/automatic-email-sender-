@@ -1,0 +1,10 @@
+.env
+credentials_local.json
+token.json
+__pycache__/
+myenv/
+user_cv_6082963128.pdf
+ngrok.exe
+test.py
+.git
+.gitignore
