@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/082da577-8cf9-4598-8297-890472374b42)![image](https://github.com/user-attachments/assets/259acd12-821a-412e-aff9-7f47229d4215)# Automatic email sender
+# Automatic email sender
 
 ## Overview
 
