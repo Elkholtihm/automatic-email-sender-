@@ -1,4 +1,4 @@
-# Automatic email sender
+![image](https://github.com/user-attachments/assets/082da577-8cf9-4598-8297-890472374b42)![image](https://github.com/user-attachments/assets/259acd12-821a-412e-aff9-7f47229d4215)# Automatic email sender
 
 ## Overview
 
@@ -79,17 +79,22 @@ This repository contains a Python-based application that automates the process o
    - Save it as `credentials_local.json` in the root directory.
    - Run the script once to authenticate and generate `token.json`.
 
-5. **Run the Application Locally:**
+5. **change LLM prompt** 
+To adapt it to youre case, the code (**bot.py**) contains my prompt. please find in the following pictures strings to change : 
+![image](https://github.com/user-attachments/assets/b0ecc548-c034-4cd0-ab10-c7acd187b0cd)
+![image](https://github.com/user-attachments/assets/d4e88f20-bb09-4ed9-8858-1de77c0b9ed7)
+
+6. **Run the Application Locally:**
    ```bash
    python app.py
    ```
 
-6. **Expose the Server Using Ngrok (Optional):**
+7. **Expose the Server Using Ngrok (Optional):**
    ```bash
    ./ngrok.exe http 5000
    ```
 
-7. **Containerize the Application:**
+8. **Containerize the Application:**
    Build and run the Docker container:
    ```bash
    docker build -t <image_name> .
