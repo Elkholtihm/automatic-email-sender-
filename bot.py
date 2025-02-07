@@ -11,13 +11,13 @@ from email import encoders
 import base64
 from dotenv import load_dotenv
 
-
+# -----------------------------------------write email using LLM---------------------------
 # Function to write the email using Groq API
 def write_email(job_description, groq_key):
     client = Groq(api_key=groq_key)
     # Get the email content
     completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="gemma2-9b-it",
         messages=[
             {
                 'role': 'user',
@@ -28,18 +28,20 @@ def write_email(job_description, groq_key):
 
                 * I am looking for a PFA internship.
 
-                * and say "Please find my GitHub repository and resume in attachement"
+                * and say "Please find my GitHub, portfolio and resume in attachement"
 
                 Here is the job description : {job_description}
                 I need you to show my interest in a PFA internship.
-                The job description might include a job opportunity or a PFE, not a PFA opportunity. Please say 'regarding the internship advertisement you published' if the type of internship is not provided or if it is a PFA internship. Otherwise, just write an email to apply without indicating that the application is regarding the advertisement.
+                The job description might include a job opportunity PFE or PFA : 
+                - if it a PFA opportunity or the type of the intership is not provided or it says it is a summer intership, please say 'regarding the internship advertisement you published' 
+                - if it is a PFE internship just write an email to apply without indicating that the application is regarding the advertisement published because i just use the email to apply. despite the opportunity doesnt fit me.
                 Please note that this is an automatic system. Provide only the email and nothing else, as everything you generate will be copied, pasted, and sent directly to the email.
                 please i want the email to be short.
                 please provide only the body without the the object.
                 ''',
             }
         ],
-        temperature=1,
+        temperature=0.6,
         max_tokens=650,
         top_p=1,
         stream=True,
@@ -81,6 +83,7 @@ def write_email(job_description, groq_key):
     return email_subject, email_content
 
 
+# -------------------------------------send email----------------------------------------
 # Load environment variables
 load_dotenv()
 CREDENTIALS_FILE = os.getenv("CREDENTIALS_FILE", "credentials_local.json")
@@ -147,6 +150,7 @@ def send_email(to_email, sender, subject, body, attachment_path=None):
         <html>
             <body>
                 <p>{body}</p>
+                <p>Check out my <a href="https://my-portfolio-96kn.onrender.com" target="_blank">portfolio</a>.</p>
                 <p>Check out my <a href="https://github.com/Elkholtihm" target="_blank">GitHub Profile</a>.</p>
             </body>
         </html>

@@ -13,4 +13,4 @@ EXPOSE 5000
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["python", "app.py"]

@@ -13,3 +13,4 @@ Quart
 requests
 telegram
 telegram_text
+pymongo

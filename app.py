@@ -15,6 +15,8 @@ from telegram.ext import (
 )
 from bot import write_email, send_email
 from dotenv import load_dotenv
+import datetime
+from pymongo import MongoClient
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +24,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 GROQ_KEY = os.getenv("GROQ_KEY")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+MONGO_URI = os.getenv("mongo_uri")
+
+# initialize MongoDB client 
+client = MongoClient(MONGO_URI)
+db = client.telegram_bot
+collection = db.job_applications
 
 # Replace with your predefined CV file path
 PREDEFINED_CV_PATH = "cv.pdf"
@@ -89,10 +97,20 @@ async def choose_cv(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Use the predefined CV
         context.user_data['cv_path'] = PREDEFINED_CV_PATH
         await query.edit_message_text("Using the predefined CV.")
+
+        # Ask for confirmation to send the email
+        keyboard = [
+            [InlineKeyboardButton("Send", callback_data="send_email")],
+            [InlineKeyboardButton("Don't Send", callback_data="dont_send")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.effective_chat.send_message("Would you like to send this email?", reply_markup=reply_markup)
         return REVIEW_EMAIL
+
     elif user_choice == "upload_cv":
         await query.edit_message_text("Please upload your CV as a PDF file.")
         return HANDLE_CV
+
 
 # Handle the uploaded CV
 async def handle_cv(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -126,19 +144,36 @@ async def review_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer()  # Acknowledge the callback query
 
     if query.data == "send_email":
-        # Send the email with the CV attachment
+        cv_path = context.user_data.get('cv_path')
+        print(f"DEBUG: CV Path before sending email: {cv_path}")  
+
+        application_data = {
+            'email': context.user_data['email'],
+            'job_description': context.user_data['job_description'],
+            "email_subject": context.user_data['email_subject'],
+            "email_body": context.user_data['email_body'],
+            "cv_path": cv_path,
+            'sent': True,
+            'timestamp': datetime.datetime.utcnow()
+        }
+
+        # Insert data into MongoDB
+        collection.insert_one(application_data)
+
+        # Send email
         send_email(
             context.user_data['email'],
             SENDER_EMAIL,
             context.user_data['email_subject'],
             context.user_data['email_body'],
-            context.user_data.get('cv_path')
+            cv_path  # Ensure this is correct
         )
         await query.edit_message_text("Email sent successfully!")
     elif query.data == "dont_send":
         await query.edit_message_text("Email not sent.")
 
     return ConversationHandler.END
+
 
 # Cancel command to end the conversation
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -161,15 +196,6 @@ conv_handler = ConversationHandler(
 
 # Add the ConversationHandler to the application
 application.add_handler(conv_handler)
-
-# Flask route to handle incoming updates from Telegram
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.get_json(force=True)
-    logger.info(json.dumps(data, indent=2))  # Log incoming data for debugging
-    update = Update.de_json(data, application.bot)
-    application.update_queue.put(update)
-    return 'ok'
 
 # Start the Flask app
 if __name__ == "__main__":
